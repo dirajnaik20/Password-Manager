@@ -25,28 +25,63 @@ fun AppNavHost(
             Home(
                 navController,
                 saveLogin = {
-
-                    loginViewModel.saveLogin(it)
-
+                    return@Home loginViewModel.saveLoginDetails(it)
                 },
                 getSavedLoginList = {
-                    return@Home loginViewModel.savedLoginList
+                    return@Home loginViewModel.allLoginDetails
+                },
+                getLoginType = {
+                    return@Home loginViewModel.loginType
+                },
+                getLoginUsername = {
+                    return@Home loginViewModel.loginUsername
+                },
+                getLoginPassword = {
+                    return@Home loginViewModel.loginPassword
+                },
+                updateLoginType = {
+                    loginViewModel.updateLoginType(it)
+                },
+                updateLoginUsername = {
+                    loginViewModel.updateLoginUsername(it)
+                },
+                updateLoginPassword = {
+                    loginViewModel.updateLoginPassword(it)
                 },
                 deleteLogin = {
-                    loginViewModel.deleteLogin(it)
+                    loginViewModel.deleteLoginDetails(it)
                 },
-                updateLogin = {
-                    loginViewModel.updateLogin(it)
+                updateEditedLoginDetails = { login, loginUiInfo ->
+                    return@Home loginViewModel.updateLoginDetails(login, loginUiInfo)
                 },
-                encryptPass = {
-                    return@Home loginViewModel.encryptThePassword(it)
+                updateEditedLoginType = {
+                    loginViewModel.updateLoginType(it)
+                },
+                updateEditedLoginUsername = {
+                    loginViewModel.updateLoginUsername(it)
+                },
+                updateEditedLoginPassword = {
+                    loginViewModel.updateLoginPassword(it)
+                },
+                getDecryptedPassword = {
+                    return@Home loginViewModel.decryptThePassword(it)
+                },
+                getLoginTypeToEdit = {
+                    loginViewModel.updateLoginType(it)
+                    return@Home loginViewModel.loginType
+
+                }, getLoginUsernameToEdit = {
+                    loginViewModel.updateLoginUsername(it)
+                    return@Home loginViewModel.loginUsername
+
+                }, getLoginPasswordToEdit = {
+
+                    loginViewModel.updateDecryptedLoginPasswordToEdit(it)
+                    return@Home loginViewModel.loginPassword
 
                 },
-                decryptPass = {
-                              loginViewModel.decryptThePassword(it)
-                },
-                encryptEditedPass = {
-                    loginViewModel.encryptThePassword(it)
+                resetTextFields = {
+                    loginViewModel.resetLoginFields()
                 }
             )
         }

@@ -19,8 +19,8 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,18 +29,19 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.LiveData
 import com.example.passwordmanager.R
 import com.example.passwordmanager.data.local.Login
 import com.example.passwordmanager.ui.theme.fontFamilyRobotoBold
+import kotlinx.coroutines.flow.Flow
+
 
 @Composable
 fun MainHomeScreenContainer(
-    getSavedLoginList: () -> LiveData<List<Login>>,
+    getSavedLoginList: () -> Flow<List<Login>>,
     openEditBottomSheet: (Login) -> Unit
 ) {
 
-    val savedList by getSavedLoginList().observeAsState()
+    val savedList by getSavedLoginList().collectAsState(emptyList())
 
     Column(
         modifier = Modifier
@@ -48,7 +49,7 @@ fun MainHomeScreenContainer(
             .background(colorResource(id = R.color.mainScreenBackground))
             .padding(10.dp, 120.dp, 10.dp, 10.dp)
     ) {
-        savedList?.let { LazyColumnContainer(it, openEditBottomSheet) }
+        LazyColumnContainer(savedList, openEditBottomSheet)
 
     }
 

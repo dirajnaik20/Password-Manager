@@ -7,14 +7,13 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.LiveData
 import androidx.navigation.NavHostController
 import com.example.passwordmanager.R
 import com.example.passwordmanager.data.local.Login
@@ -32,22 +30,38 @@ import com.example.passwordmanager.presentation.composables.AddLoginBottomSheetC
 import com.example.passwordmanager.presentation.composables.EditLoginBottomSheetContainer
 import com.example.passwordmanager.presentation.composables.MainHomeScreenContainer
 import com.example.passwordmanager.presentation.composables.TopBarHeading
+import com.example.passwordmanager.presentation.model.LoginUiInfo
 import com.example.passwordmanager.utils.EncryptionUtils
 import com.example.passwordmanager.utils.Password
+import kotlinx.coroutines.flow.Flow
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Home(
     navHostController: NavHostController,
-    saveLogin: (Login) -> Unit,
-    getSavedLoginList: () -> LiveData<List<Login>>,
+    getSavedLoginList: () -> Flow<List<Login>>,
+    saveLogin: (LoginUiInfo) -> Boolean,
+    getLoginType: () -> MutableState<String>,
+    getLoginUsername: () -> MutableState<String>,
+    getLoginPassword: () -> MutableState<String>,
+    updateLoginType: (String) -> Unit,
+    updateLoginUsername: (String) -> Unit,
+    updateLoginPassword: (String) -> Unit,
     deleteLogin: (Login) -> Unit,
-    updateLogin: (Login) -> Unit,
-    encryptPass: (String) -> Password,
-    decryptPass: (Password) -> String,
-    encryptEditedPass: (String) -> Password
-
-) {
+    getDecryptedPassword: (Password) -> String,
+    updateEditedLoginType: (String) -> Unit,
+    updateEditedLoginUsername: (String) -> Unit,
+    updateEditedLoginPassword: (String) -> Unit,
+    updateEditedLoginDetails: (
+        Login,
+        LoginUiInfo
+    ) -> Boolean,
+    getLoginTypeToEdit: (String) -> MutableState<String>,
+    getLoginUsernameToEdit: (String) -> MutableState<String>,
+    getLoginPasswordToEdit: (Password) -> MutableState<String>,
+    resetTextFields:()->Unit
+    ) {
 
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
@@ -80,6 +94,7 @@ fun Home(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
+                    resetTextFields()
                     isShowAddBottomSheet = true
                     showBottomSheet = true
 
@@ -89,8 +104,7 @@ fun Home(
             ) {
                 Icon(
                     modifier = Modifier
-                        .size(50.dp)
-                    ,
+                        .size(50.dp),
                     imageVector = Icons.Default.Add,
                     contentDescription = "",
                     tint = Color.White
@@ -122,7 +136,12 @@ fun Home(
                 when (isShowAddBottomSheet) {
                     true -> AddLoginBottomSheetContainer(
                         saveLogin = saveLogin,
-                        encryptPass = encryptPass
+                        getLoginType = getLoginType,
+                        getLoginUsername = getLoginUsername,
+                        getLoginPassword = getLoginPassword,
+                        updateLoginType = updateLoginType,
+                        updateLoginUsername = updateLoginUsername,
+                        updateLoginPassword = updateLoginPassword,
                     )
 
                     false -> EditLoginBottomSheetContainer(
@@ -130,16 +149,14 @@ fun Home(
                         deleteLogin = {
                             deleteLogin(it)
                         },
-                        updateLogin = {
-                            updateLogin(it)
-                        },
-                        decryptPass = {
-                            decryptPass(it)
-                        },
-                        encryptEditedPass = {
-                            encryptEditedPass(it)
-
-                        }
+                        getDecryptedPassword = getDecryptedPassword,
+                        updateEditedLoginType=updateEditedLoginType,
+                        updateEditedLoginUsername=updateEditedLoginUsername,
+                        updateEditedLoginPassword=updateEditedLoginPassword,
+                        updateEditedLoginDetails=updateEditedLoginDetails,
+                        getLoginTypeToEdit=getLoginTypeToEdit,
+                        getLoginUsernameToEdit = getLoginUsernameToEdit,
+                        getDecryptedLoginPasswordToEdit=getLoginPasswordToEdit
                     )
                 }
 
