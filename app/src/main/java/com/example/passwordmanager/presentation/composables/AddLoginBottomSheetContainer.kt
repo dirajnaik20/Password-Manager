@@ -1,6 +1,6 @@
 package com.example.passwordmanager.presentation.composables
 
-import androidx.compose.foundation.background
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -10,49 +10,53 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import com.example.passwordmanager.data.local.Login
-import com.example.passwordmanager.utils.Password
 import com.example.passwordmanager.R
+import com.example.passwordmanager.presentation.model.LoginUiInfo
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddLoginBottomSheetContainer(
-    saveLogin: (Login) -> Unit,
-    encryptPass: (String) -> Password
+    saveLogin: (LoginUiInfo) -> Boolean,
+    getLoginType: () -> MutableState<String>,
+    getLoginUsername: () -> MutableState<String>,
+    getLoginPassword: () -> MutableState<String>,
+    updateLoginType: (String) -> Unit,
+    updateLoginUsername: (String) -> Unit,
+    updateLoginPassword: (String) -> Unit,
 ) {
 
-    var loginType by remember {
-        mutableStateOf("")
+    val loginType by remember {
+        mutableStateOf(getLoginType())
     }
 
-    var loginUsername by remember {
-        mutableStateOf("")
+    val loginUsername by remember {
+        mutableStateOf(getLoginUsername())
     }
 
-    var loginPassword by remember {
-        mutableStateOf("")
+    val loginPassword by remember {
+        mutableStateOf(getLoginPassword())
     }
 
-    var isValid by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
 
     Column(
         modifier = Modifier
@@ -65,22 +69,15 @@ fun AddLoginBottomSheetContainer(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(20.dp)
-            ,
+                .padding(20.dp),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
             OutlinedTextField(
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = colorResource(id = R.color.fontColorGray),
-                    unfocusedBorderColor = colorResource(id = R.color.fontColorGray),
-                ),
-                value = loginType,
-                onValueChange = { typed ->
-                    loginType = typed
-                    isValid = typed.isNotEmpty()
-
+                value = loginType.value,
+                onValueChange = {
+                    updateLoginType(it)
                 },
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Done
@@ -89,7 +86,11 @@ fun AddLoginBottomSheetContainer(
                     Text(text = "Account Name")
                 },
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxWidth(),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = colorResource(id = R.color.fontColorGray),
+                    unfocusedBorderColor = colorResource(id = R.color.fontColorGray),
+                ),
             )
 
 
@@ -103,9 +104,9 @@ fun AddLoginBottomSheetContainer(
                     focusedBorderColor = colorResource(id = R.color.fontColorGray),
                     unfocusedBorderColor = colorResource(id = R.color.fontColorGray),
                 ),
-                value = loginUsername,
-                onValueChange = { typed ->
-                    loginUsername = typed
+                value = loginUsername.value,
+                onValueChange = {
+                    updateLoginUsername(it)
                 },
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Done
@@ -123,9 +124,9 @@ fun AddLoginBottomSheetContainer(
             )
 
             OutlinedTextField(
-                value = loginPassword,
-                onValueChange = { typed ->
-                    loginPassword = typed
+                value = loginPassword.value,
+                onValueChange = {
+                    updateLoginPassword(it)
                 },
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Done
@@ -150,19 +151,18 @@ fun AddLoginBottomSheetContainer(
 
             Button(
                 onClick = {
-                    if (loginType.isNotEmpty() && loginUsername.isNotEmpty() && loginPassword.isNotEmpty()) {
-
-                        val password = encryptPass(loginPassword)
+                    if(
                         saveLogin(
-                            Login(
-                                id = 0,
-                                loginType = loginType,
-                                loginUsername = loginUsername,
-                                loginPassword = password.password,
-                                loginKey = password.key
+                            LoginUiInfo(
+                                loginType = loginType.value,
+                                loginUsername = loginUsername.value,
+                                loginPassword = loginPassword.value
                             )
                         )
-
+                    ){
+                        Toast
+                            .makeText(context, "New Login Details Added!", Toast.LENGTH_LONG)
+                            .show()
                     }
 
                 },
