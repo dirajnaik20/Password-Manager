@@ -1,5 +1,9 @@
 package com.example.passwordmanager.presentation.screens
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imeNestedScroll
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -36,7 +40,7 @@ import com.example.passwordmanager.utils.Password
 import kotlinx.coroutines.flow.Flow
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun Home(
     navHostController: NavHostController,
@@ -60,8 +64,8 @@ fun Home(
     getLoginTypeToEdit: (String) -> MutableState<String>,
     getLoginUsernameToEdit: (String) -> MutableState<String>,
     getLoginPasswordToEdit: (Password) -> MutableState<String>,
-    resetTextFields:()->Unit
-    ) {
+    resetTextFields: () -> Unit
+) {
 
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
@@ -127,40 +131,50 @@ fun Home(
 
         if (showBottomSheet) {
             ModalBottomSheet(
+                modifier = Modifier
+                    .imeNestedScroll()
+                ,
                 onDismissRequest = {
                     showBottomSheet = false
                 },
-                sheetState = sheetState
-            ) {
+                sheetState = sheetState,
+                content = {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .imeNestedScroll()
+                    ) {
 
-                when (isShowAddBottomSheet) {
-                    true -> AddLoginBottomSheetContainer(
-                        saveLogin = saveLogin,
-                        getLoginType = getLoginType,
-                        getLoginUsername = getLoginUsername,
-                        getLoginPassword = getLoginPassword,
-                        updateLoginType = updateLoginType,
-                        updateLoginUsername = updateLoginUsername,
-                        updateLoginPassword = updateLoginPassword,
-                    )
+                        when (isShowAddBottomSheet) {
+                            true -> AddLoginBottomSheetContainer(
+                                saveLogin = saveLogin,
+                                getLoginType = getLoginType,
+                                getLoginUsername = getLoginUsername,
+                                getLoginPassword = getLoginPassword,
+                                updateLoginType = updateLoginType,
+                                updateLoginUsername = updateLoginUsername,
+                                updateLoginPassword = updateLoginPassword,
+                            )
 
-                    false -> EditLoginBottomSheetContainer(
-                        editLoginItem,
-                        deleteLogin = {
-                            deleteLogin(it)
-                        },
-                        getDecryptedPassword = getDecryptedPassword,
-                        updateEditedLoginType=updateEditedLoginType,
-                        updateEditedLoginUsername=updateEditedLoginUsername,
-                        updateEditedLoginPassword=updateEditedLoginPassword,
-                        updateEditedLoginDetails=updateEditedLoginDetails,
-                        getLoginTypeToEdit=getLoginTypeToEdit,
-                        getLoginUsernameToEdit = getLoginUsernameToEdit,
-                        getDecryptedLoginPasswordToEdit=getLoginPasswordToEdit
-                    )
+                            false -> EditLoginBottomSheetContainer(
+                                editLoginItem,
+                                deleteLogin = {
+                                    deleteLogin(it)
+                                },
+                                updateEditedLoginType = updateEditedLoginType,
+                                updateEditedLoginUsername = updateEditedLoginUsername,
+                                updateEditedLoginPassword = updateEditedLoginPassword,
+                                updateEditedLoginDetails = updateEditedLoginDetails,
+                                getLoginTypeToEdit = getLoginTypeToEdit,
+                                getLoginUsernameToEdit = getLoginUsernameToEdit,
+                                getDecryptedLoginPasswordToEdit = getLoginPasswordToEdit
+                            )
+                        }
+
+                    }
+
                 }
-
-            }
+            )
         }
     }
 }
